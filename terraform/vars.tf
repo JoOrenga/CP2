@@ -1,5 +1,5 @@
 # =============================================================================
-# variables.tf - Demo Sesión 1
+# variables.tf
 # =============================================================================
 variable "subscription_id" {
   description = "ID de suscripción. Vacío si usas ARM_SUBSCRIPTION_ID."
@@ -22,4 +22,12 @@ variable "acr_name" {
   description = "Nombre del ACR (único global, minúsculas y números)."
   type        = string
   default     = "cp2acrjorengap"
+}
+
+variable "network_name" {
+  default = "vnet1"
+}
+
+variable "subnet_name" {
+  default = "subnet1"
 }

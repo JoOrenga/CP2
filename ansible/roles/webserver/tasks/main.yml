@@ -1,0 +1,70 @@
+---
+- name: Instalar Podman
+  dnf:
+    name: podman
+    state: present
+  become: true
+
+- name: Crear directorio de trabajo
+  file:
+    path: /opt/webserver
+    state: directory
+  become: true
+
+- name: Copiar Dockerfile
+  template:
+    src: Dockerfile.j2
+    dest: /opt/webserver/Dockerfile
+  become: true
+
+- name: Copiar nginx.conf
+  template:
+    src: nginx.conf.j2
+    dest: /opt/webserver/nginx.conf
+  become: true
+
+- name: Copiar index.html
+  template:
+    src: index.html.j2
+    dest: /opt/webserver/index.html
+  become: true
+
+- name: Crear directorio SSL dentro del contexto Docker
+  file:
+    path: /opt/webserver/ssl
+    state: directory
+  become: true
+
+- name: Login en ACR
+  command: >
+    podman login {{ acr_name }}
+    --username {{ acr_user }}
+    --password {{ acr_password }}
+  become: true
+  no_log: true
+
+- name: Construir imagen
+  command: podman build -t {{ acr_name }}/{{ image_name }}:{{ image_tag }} /opt/webserver
+  become: true
+
+- name: Subir imagen al ACR
+  command: podman push {{ acr_name }}/{{ image_name }}:{{ image_tag }}
+  become: true
+
+- name: Copiar servicio systemd
+  template:
+    src: nginx-podman.service.j2
+    dest: /etc/systemd/system/nginx-podman.service
+  become: true
+
+- name: Recargar systemd
+  systemd:
+    daemon_reload: true
+  become: true
+
+- name: Habilitar e iniciar el servicio
+  systemd:
+    name: nginx-podman
+    enabled: true
+    state: started
+  become: true
