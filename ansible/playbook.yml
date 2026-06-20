@@ -1,5 +1,6 @@
 ---
 - name: Desplegar servidor web Nginx en Podman
   hosts: vm
+  become: true
   roles:
     - webserver

@@ -11,4 +11,4 @@ ExecStop=/usr/bin/podman stop {{ container_name }}
 ExecStopPost=/usr/bin/podman rm -f {{ container_name }}
 
 [Install]
-WantedBy=multi-user.target  # se inicia cuando el sistema arranca en modo normal
+WantedBy=multi-user.target

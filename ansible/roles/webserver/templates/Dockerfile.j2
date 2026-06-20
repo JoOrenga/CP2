@@ -1,7 +1,10 @@
-FROM nginx:alpine
+FROM docker.io/library/nginx:alpine
 
 # Instalar openssl y apache2-utils para htpasswd
 RUN apk add --no-cache openssl apache2-utils
+
+# Crear el directorio para el certificado SSL
+RUN mkdir -p /etc/nginx/ssl
 
 # Crear certificado autofirmado
 RUN openssl req -x509 -nodes -days 365 -newkey rsa:2048 \

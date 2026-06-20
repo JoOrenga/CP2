@@ -1,70 +1,73 @@
 ---
+- name: Actualizar cache de apt
+  ansible.builtin.apt:
+    update_cache: true
+  
 - name: Instalar Podman
-  dnf:
+  ansible.builtin.package:
     name: podman
     state: present
-  become: true
 
 - name: Crear directorio de trabajo
-  file:
+  ansible.builtin.file:
     path: /opt/webserver
     state: directory
-  become: true
 
 - name: Copiar Dockerfile
-  template:
+  ansible.builtin.template:
     src: Dockerfile.j2
     dest: /opt/webserver/Dockerfile
-  become: true
 
 - name: Copiar nginx.conf
-  template:
+  ansible.builtin.template:
     src: nginx.conf.j2
     dest: /opt/webserver/nginx.conf
-  become: true
 
 - name: Copiar index.html
-  template:
+  ansible.builtin.template:
     src: index.html.j2
     dest: /opt/webserver/index.html
-  become: true
 
 - name: Crear directorio SSL dentro del contexto Docker
-  file:
+  ansible.builtin.file:
     path: /opt/webserver/ssl
     state: directory
-  become: true
 
 - name: Login en ACR
-  command: >
-    podman login {{ acr_name }}
-    --username {{ acr_user }}
-    --password {{ acr_password }}
-  become: true
+  containers.podman.podman_login:
+    registry: "{{ acr_name }}"
+    username: "{{ acr_user }}"
+    password: "{{ acr_password }}"
   no_log: true
 
 - name: Construir imagen
-  command: podman build -t {{ acr_name }}/{{ image_name }}:{{ image_tag }} /opt/webserver
-  become: true
+  containers.podman.podman_image:
+    name: "{{ acr_name }}/{{ image_name }}"
+    tag: "{{ image_tag }}"
+    path: /opt/webserver
+    build:
+      file: /opt/webserver/Dockerfile
+    state: build
 
 - name: Subir imagen al ACR
-  command: podman push {{ acr_name }}/{{ image_name }}:{{ image_tag }}
-  become: true
+  containers.podman.podman_image:
+    name: "{{ acr_name }}/{{ image_name }}"
+    tag: "{{ image_tag }}"
+    push: true
+    push_args:
+      dest: "{{ acr_name }}/{{ image_name }}:{{ image_tag }}"
 
 - name: Copiar servicio systemd
-  template:
+  ansible.builtin.template:
     src: nginx-podman.service.j2
     dest: /etc/systemd/system/nginx-podman.service
-  become: true
 
 - name: Recargar systemd
-  systemd:
+  ansible.builtin.systemd_service:
     daemon_reload: true
-  become: true
 
 - name: Habilitar e iniciar el servicio
-  systemd:
+  ansible.builtin.systemd_service:
     name: nginx-podman
     enabled: true
     state: started
-  become: true
