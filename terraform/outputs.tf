@@ -21,3 +21,8 @@ output "vm_id" {
 output "public_ip" {
   value = azurerm_public_ip.pip.ip_address
 }
+
+output "aks_kube_config" {
+  value     = azurerm_kubernetes_cluster.aks.kube_config_raw
+  sensitive = true
+}

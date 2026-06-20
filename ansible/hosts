@@ -1,2 +1,5 @@
 [vm]
-20.240.251.50 ansible_user=azureuser ansible_ssh_private_key_file=/home/jorengap/.ssh/id_rsa
+20.91.202.115 ansible_user=azureuser ansible_ssh_private_key_file=/home/jorengap/.ssh/id_rsa
+
+[k8s]
+localhost ansible_connection=local

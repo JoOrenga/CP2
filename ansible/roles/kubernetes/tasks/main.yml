@@ -1,0 +1,105 @@
+---
+- name: Crear directorio de trabajo para la imagen
+  ansible.builtin.file:
+    path: /tmp/apache-build
+    state: directory
+
+- name: Copiar Dockerfile
+  ansible.builtin.template:
+    src: Dockerfile-apache.j2
+    dest: /tmp/apache-build/Dockerfile
+
+- name: Copiar entrypoint.sh
+  ansible.builtin.template:
+    src: entrypoint.sh.j2
+    dest: /tmp/apache-build/entrypoint.sh
+    mode: "0755"
+
+- name: Login en ACR
+  containers.podman.podman_login:
+    registry: "{{ acr_name }}"
+    username: "{{ acr_user }}"
+    password: "{{ acr_password }}"
+  no_log: true
+
+- name: Construir imagen Apache
+  containers.podman.podman_image:
+    name: "{{ acr_name }}/{{ apache_image_name }}"
+    tag: "{{ apache_image_tag }}"
+    path: /tmp/apache-build
+    build:
+      file: /tmp/apache-build/Dockerfile
+    state: build
+
+- name: Subir imagen al ACR
+  containers.podman.podman_image:
+    name: "{{ acr_name }}/{{ apache_image_name }}"
+    tag: "{{ apache_image_tag }}"
+    push: true
+    push_args:
+      dest: "{{ acr_name }}/{{ apache_image_name }}:{{ apache_image_tag }}"
+
+- name: Crear namespace
+  kubernetes.core.k8s:
+    kubeconfig: "{{ kubeconfig_path }}"
+    state: present
+    definition:
+      apiVersion: v1
+      kind: Namespace
+      metadata:
+        name: default
+
+- name: Crear secret de autenticación al ACR
+  kubernetes.core.k8s:
+    kubeconfig: "{{ kubeconfig_path }}"
+    state: present
+    definition:
+      apiVersion: v1
+      kind: Secret
+      metadata:
+        name: acr-secret
+        namespace: default
+      type: kubernetes.io/dockerconfigjson
+      data:
+        .dockerconfigjson: "{{ lookup('template', 'dockerconfig.json.j2') | b64encode }}"
+
+- name: Aplicar PVC
+  kubernetes.core.k8s:
+    kubeconfig: "{{ kubeconfig_path }}"
+    state: present
+    definition: "{{ lookup('template', 'pvc.yaml.j2') | from_yaml }}"
+
+- name: Aplicar Deployment
+  kubernetes.core.k8s:
+    kubeconfig: "{{ kubeconfig_path }}"
+    state: present
+    definition: "{{ lookup('template', 'deployment.yaml.j2') | from_yaml }}"
+
+- name: Aplicar Service
+  kubernetes.core.k8s:
+    kubeconfig: "{{ kubeconfig_path }}"
+    state: present
+    definition: "{{ lookup('template', 'service.yaml.j2') | from_yaml }}"
+
+- name: Obtener IP pública del servicio
+  kubernetes.core.k8s_info:
+    kubeconfig: "{{ kubeconfig_path }}"
+    kind: Service
+    name: apache-service
+    namespace: default
+  register: apache_service_info
+
+- name: Esperar a que el LoadBalancer tenga IP pública asignada
+  kubernetes.core.k8s_info:
+    kubeconfig: "{{ kubeconfig_path }}"
+    kind: Service
+    name: apache-service
+    namespace: default
+  register: apache_service_info
+  until: apache_service_info.resources[0].status.loadBalancer.ingress is defined
+  retries: 30
+  delay: 10
+
+- name: Mostrar IP pública
+  ansible.builtin.debug:
+    msg: "Apache disponible en: http://{{ apache_service_info.resources[0].status.loadBalancer.ingress[0].ip }}"

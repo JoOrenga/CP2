@@ -2,6 +2,7 @@
 - name: Actualizar cache de apt
   ansible.builtin.apt:
     update_cache: true
+  when: ansible_os_family == "Debian"
   
 - name: Instalar Podman
   ansible.builtin.package:

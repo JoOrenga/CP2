@@ -1,0 +1,4 @@
+acr_name: "acrjorengap.azurecr.io"
+apache_image_name: "apache-web"
+apache_image_tag: "casopractico2"
+kubeconfig_path: "{{ playbook_dir }}/kubeconfig"

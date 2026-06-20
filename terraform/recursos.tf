@@ -174,6 +174,49 @@ resource "local_file" "ansible_hosts" {
   content = <<-EOF
     [vm]
     ${azurerm_public_ip.pip.ip_address} ansible_user=azureuser ansible_ssh_private_key_file=${pathexpand("~/.ssh/id_rsa")}
+
+    [k8s]
+    localhost ansible_connection=local
   EOF
   filename = "../ansible/hosts"
+}
+
+
+# =============================================================================
+# aks.tf
+# =============================================================================
+
+resource "azurerm_kubernetes_cluster" "aks" {
+  name                = var.aks_name
+  location            = azurerm_resource_group.rg.location
+  resource_group_name = azurerm_resource_group.rg.name
+  dns_prefix          = "cp2aks"
+
+  default_node_pool {
+    name       = "default"
+    node_count = 1
+    vm_size    = "Standard_D2as_v4"
+  }
+
+  identity {
+    type = "SystemAssigned"
+  }
+
+  tags = {
+    environment = "casopractico2"
+  }
+}
+
+# Da permiso al AKS para hacer pull del ACR automáticamente
+resource "azurerm_role_assignment" "aks_acr_pull" {
+  principal_id                    = azurerm_kubernetes_cluster.aks.kubelet_identity[0].object_id
+  role_definition_name            = "AcrPull"
+  scope                            = azurerm_container_registry.acr.id
+  skip_service_principal_aad_check = true
+}
+
+# Generar el kubeconfig como archivo para Ansible/kubectl
+resource "local_file" "kubeconfig" {
+  content  = azurerm_kubernetes_cluster.aks.kube_config_raw
+  filename = "../ansible/kubeconfig"
 }

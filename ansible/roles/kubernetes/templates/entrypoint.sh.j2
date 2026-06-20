@@ -1,0 +1,11 @@
+#!/bin/sh
+
+if [ ! -f /usr/local/apache2/htdocs/index.html ]; then
+  echo "<html><body>" > /usr/local/apache2/htdocs/index.html
+  echo "<h1>CasoPractico2 - Apache en AKS</h1>" >> /usr/local/apache2/htdocs/index.html
+  echo "<p>Contenido creado el: $(date)</p>" >> /usr/local/apache2/htdocs/index.html
+  echo "<p>Pod actual: $(hostname)</p>" >> /usr/local/apache2/htdocs/index.html
+  echo "</body></html>" >> /usr/local/apache2/htdocs/index.html
+fi
+
+httpd-foreground

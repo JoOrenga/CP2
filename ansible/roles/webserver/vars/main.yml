@@ -1,4 +1,4 @@
-acr_name: "cp2acrjorengap.azurecr.io"  # URL de tu registro de contenedores en Azure
+acr_name: "acrjorengap.azurecr.io"  # URL de tu registro de contenedores en Azure
 image_name: "nginx-web"            # nombre que tendrá tu imagen Docker
 image_tag: "casopractico2"                # versión/tag de la imagen
 container_name: "webserver"        # nombre del contenedor cuando se ejecute en Podman

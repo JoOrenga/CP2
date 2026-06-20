@@ -1,0 +1,9 @@
+{
+  "auths": {
+    "{{ acr_name }}": {
+      "username": "{{ acr_user }}",
+      "password": "{{ acr_password }}",
+      "auth": "{{ (acr_user + ':' + acr_password) | b64encode }}"
+    }
+  }
+}

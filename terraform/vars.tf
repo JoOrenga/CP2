@@ -15,13 +15,13 @@ variable "location" {
 
 variable "resource_group_name" {
   type    = string
-  default = "rg-cp2-jorengap"
+  default = "rg-jorengap"
 }
 
 variable "acr_name" {
   description = "Nombre del ACR (único global, minúsculas y números)."
   type        = string
-  default     = "cp2acrjorengap"
+  default     = "acrjorengap"
 }
 
 variable "network_name" {
@@ -30,4 +30,11 @@ variable "network_name" {
 
 variable "subnet_name" {
   default = "subnet1"
+}
+
+
+variable "aks_name" {
+  description = "Nombre del AKS (único global, minúsculas y números)."
+  type        = string
+  default     = "aksjorengap"
 }

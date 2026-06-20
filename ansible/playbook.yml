@@ -4,3 +4,10 @@
   become: true
   roles:
     - webserver
+
+- name: Desplegar Apache en AKS
+  hosts: k8s
+  connection: local
+  become: false
+  roles:
+    - kubernetes
