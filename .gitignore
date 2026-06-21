@@ -3,3 +3,5 @@ terraform/terraform.tfstate
 terraform/.terraform.lock.hcl
 terraform/terraform.tfstate.backup
 terraform/id_rsa
+generate-requirements.sh
+ansible/kubeconfig

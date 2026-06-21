@@ -1,0 +1,4 @@
+# Dependencias Python necesarias para Ansible + módulo kubernetes
+
+kubernetes>=36.0.2
+ansible-core>=2.21.0

@@ -173,7 +173,7 @@ resource "azurerm_network_interface_security_group_association" "nsg_assoc" {
 resource "local_file" "ansible_hosts" {
   content = <<-EOF
     [vm]
-    ${azurerm_public_ip.pip.ip_address} ansible_user=azureuser ansible_ssh_private_key_file=${pathexpand("~/.ssh/id_rsa")}
+    ${azurerm_public_ip.pip.ip_address} ansible_user=azureuser ansible_ssh_private_key_file=~/.ssh/id_rsa
 
     [k8s]
     localhost ansible_connection=local

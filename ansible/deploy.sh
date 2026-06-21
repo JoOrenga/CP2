@@ -1,7 +1,7 @@
 #!/bin/bash
 
-cd ../terraform
-# terraform apply -auto-approve
+cd terraform
+terraform apply -auto-approve
 
 ACR_USER=$(terraform output -raw acr_admin_username)
 ACR_PASSWORD=$(terraform output -raw acr_admin_password)
