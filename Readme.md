@@ -18,7 +18,7 @@ sudo systemctl status nginx-podman
 
 ### Comprobar que el contenedor está corriendo
 ```bash
-podman ps
+sudo podman ps
 ```
 
 ### Comprobar acceso HTTPS con autenticación básica
